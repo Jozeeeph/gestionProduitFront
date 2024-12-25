@@ -25,22 +25,23 @@ const String createProductMutation = """
 """;
 
 const String updateProductMutation = """
-  mutation UpdateProduct(\$id: Int!, \$name: String, \$price: Float, \$image: String) {
+  mutation updateProduct(\$id: ID!, \$name: String!, \$price: Float!, \$image: String!) {
   updateProduct(id: \$id, name: \$name, price: \$price, image: \$image) {
     product {
-      ids
+      id
       name
       price
-      image  # Returns the updated base64 image string
+      image
     }
   }
 }
 """;
 
 const String deleteProductMutation = """
-  mutation deleteProduct(\$id: Int!) {
-    deleteProduct(id: \$id) {
-      success
-    }
+  mutation deleteProduct(\$id: ID!) {
+  deleteProduct(id: \$id) {
+    success
+    message
   }
+}
 """;
