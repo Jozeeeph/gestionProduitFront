@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io'; // Import to handle file paths
 
 // GraphQL Configuration
 class GraphQLConfig {
@@ -38,7 +39,7 @@ const String createProductMutation = """
       }
     }
   }
-""";
+""" ;
 
 void main() {
   runApp(MyApp());
@@ -121,46 +122,56 @@ class _ProductListPageState extends State<ProductListPage> {
                       if (_imageUrl.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(left: 10),
-                          child: Text('Image selected'),
+                          child: Column(
+                            children: [
+                              Text('Image selected'),
+                              Image.file(
+                                File(_imageUrl),  // Display the image using the selected file path
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
                         ),
                     ],
                   ),
                   Mutation(
-                    options: MutationOptions(
-                      document: gql(createProductMutation),
-                      variables: {
-                        'name': _nameController.text,
-                        'price': double.tryParse(_priceController.text) ?? 0,
-                        'image': _imageUrl,
-                      },
-                      onCompleted: (dynamic resultData) {
-                        if (resultData != null) {
-                          // Handle success
-                          print('Product added: ${resultData['createProduct']['product']['name']}');
-                        }
-                      },
-                    ),
-                    builder: (RunMutation runMutation, QueryResult? result) {
-                      if (result?.hasException ?? false) {
-                        return Center(
-                          child: Text(
-                            'Error: ${result!.exception.toString()}',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        );
-                      }
+  options: MutationOptions(
+    document: gql(createProductMutation),
+    onCompleted: (dynamic resultData) {
+      if (resultData != null) {
+        // Handle success
+        print('Product added: ${resultData['createProduct']['product']['name']}');
+      }
+    },
+  ),
+  builder: (RunMutation runMutation, QueryResult? result) {
+    if (result?.hasException ?? false) {
+      return Center(
+        child: Text(
+          'Error: ${result!.exception.toString()}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    }
 
-                      return ElevatedButton(
-                        onPressed: () {
-                          if (_nameController.text.isNotEmpty && _priceController.text.isNotEmpty) {
-                            runMutation({});
-                          }
-                        },
-                        child: const Text('Add Product'),
-                      );
-                    },
-                  ),
+    return ElevatedButton(
+      onPressed: () {
+        if (_nameController.text.isNotEmpty && _priceController.text.isNotEmpty && _imageUrl.isNotEmpty) {
+          runMutation({
+            'name': _nameController.text,
+            'price': double.tryParse(_priceController.text) ?? 0.0,
+            'image': _imageUrl,
+          });
+        }
+      },
+      child: const Text('Add Product'),
+    );
+  },
+),
+
                 ],
               ),
             ),
